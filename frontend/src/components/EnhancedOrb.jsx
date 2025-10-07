@@ -333,12 +333,11 @@ export default function EnhancedOrb({
   return (
     <div 
       ref={ctnDom} 
-      className={`absolute -inset-10 w-[120%] h-[120%] pointer-events-none ${className}`}
+      className={`fixed inset-0 w-full h-full pointer-events-none flex items-center justify-center ${className}`}
       style={{ 
         zIndex: -1,
-        opacity: 0.4,
+        opacity: 0.3,
         filter: 'blur(0.5px)',
-        transform: 'scale(1.3)'
       }}
     />
   );
