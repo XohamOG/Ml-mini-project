@@ -19,7 +19,12 @@ const storage = multer.diskStorage({
     cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
+    // For blob uploads, use .wav extension by default
+    let extension = path.extname(file.originalname);
+    if (!extension || file.originalname === "blob" || file.originalname === "") {
+      extension = ".wav"; // Default to .wav for browser recordings
+    }
+    const uniqueName = `${uuidv4()}${extension}`;
     cb(null, uniqueName);
   },
 });
@@ -35,26 +40,29 @@ const upload = multer({
       "audio/flac",
       "audio/m4a",
       "audio/ogg",
-      "audio/webm",
+      "audio/webm", // For browser recordings
+      "audio/3gpp", // For mobile recordings
       "audio/x-wav",
-      "audio/vnd.wav",
-      "audio/mp4",
-      "video/webm", // Browser recordings sometimes come as video/webm with audio
+      "audio/x-m4a",
     ];
     
-    const allowedExtensions = [".wav", ".mp3", ".flac", ".m4a", ".ogg", ".webm"];
+    // Check if it's a valid audio file by mimetype or extension
+    const hasValidMimetype = allowedTypes.includes(file.mimetype);
+    const hasValidExtension = [".wav", ".mp3", ".flac", ".m4a", ".ogg", ".webm", ".3gp"].includes(
+      path.extname(file.originalname).toLowerCase()
+    );
     
-    console.log(`📁 File received: ${file.originalname}, MIME: ${file.mimetype}`);
+    // For blob uploads from browser (like microphone recordings), originalname might be "blob"
+    const isBrowserBlob = file.originalname === "blob" || file.originalname === "";
     
-    if (
-      allowedTypes.includes(file.mimetype) ||
-      allowedExtensions.includes(path.extname(file.originalname).toLowerCase()) ||
-      file.mimetype.startsWith('audio/') ||
-      (file.mimetype === 'video/webm' && file.originalname.includes('audio'))
-    ) {
+    if (hasValidMimetype || hasValidExtension || isBrowserBlob) {
       cb(null, true);
     } else {
-      console.error(`❌ Rejected file: ${file.originalname}, MIME: ${file.mimetype}`);
+      console.log("Rejected file:", {
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size
+      });
       cb(new Error("Only audio files are allowed"), false);
     }
   },
