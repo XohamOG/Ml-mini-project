@@ -378,6 +378,35 @@ app.get("/api/test-samples", (req, res) => {
   res.json(testSamples);
 });
 
+// Get model metrics and performance data
+app.get("/api/model-metrics", async (req, res) => {
+  try {
+    const includeAll = req.query.all === "true";
+    const args = includeAll ? ["--all"] : [];
+
+    const result = await runPythonScript("get_model_metrics.py", args);
+    const parsedResult = JSON.parse(result);
+
+    if (parsedResult.error) {
+      return res.status(500).json({
+        success: false,
+        error: parsedResult.error,
+      });
+    }
+
+    res.json({
+      success: true,
+      ...parsedResult,
+    });
+  } catch (error) {
+    console.error("Model metrics error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to get model metrics: " + error.message,
+    });
+  }
+});
+
 // Initialize server
 const startServer = async () => {
   try {
