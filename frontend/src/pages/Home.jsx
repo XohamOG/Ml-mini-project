@@ -5,11 +5,13 @@ import AnimatedButton from '@/components/AnimatedButton'
 import LoadingSplash from '@/components/LoadingSplash'
 import AnimatedTypeText from '@/components/AnimatedTypeText'
 import EnhancedOrb from '@/components/EnhancedOrb'
+import { useTheme } from '@/contexts/ThemeContext'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
 // Landing page: minimal, funky, white+beige theme
 export default function Home() {
+  const { isDark } = useTheme()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

@@ -11,9 +11,11 @@ import {
 import { useCountUp } from "@/hooks/useCountUp";
 import { motion } from "framer-motion";
 import SimpleOrb from "@/components/SimpleOrb";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useState, useEffect } from "react";
 
 export default function Results() {
+  const { isDark } = useTheme();
   const [modelData, setModelData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -187,16 +189,33 @@ export default function Results() {
                   data={metrics}
                   margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <CartesianGrid 
+                    strokeDasharray="3 3" 
+                    stroke={isDark ? '#333333' : '#e5e7eb'} 
+                  />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke={isDark ? '#ffffff' : '#6b7280'}
+                    fontSize={12}
+                  />
                   <YAxis
                     domain={[0, 1]}
                     tickFormatter={(v) => `${Math.round(v * 100)}%`}
+                    stroke={isDark ? '#ffffff' : '#6b7280'}
+                    fontSize={12}
                   />
-                  <Tooltip formatter={(v) => `${Math.round(v * 100)}%`} />
+                  <Tooltip 
+                    formatter={(v) => `${Math.round(v * 100)}%`}
+                    contentStyle={{
+                      backgroundColor: isDark ? '#000000' : '#ffffff',
+                      border: `1px solid ${isDark ? '#333333' : '#e5e7eb'}`,
+                      borderRadius: '8px',
+                      color: isDark ? '#ffffff' : '#111827'
+                    }}
+                  />
                   <Bar
                     dataKey="value"
-                    fill="oklch(0.78 0.12 55)"
+                    fill={isDark ? '#ffffff' : '#8b5a2b'}
                     radius={[8, 8, 0, 0]}
                   />
                 </BarChart>

@@ -27,7 +27,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
-    // Allow audio files
+    // Allow audio files - including browser recorded formats
     const allowedTypes = [
       "audio/wav",
       "audio/mpeg",
@@ -35,15 +35,26 @@ const upload = multer({
       "audio/flac",
       "audio/m4a",
       "audio/ogg",
+      "audio/webm",
+      "audio/x-wav",
+      "audio/vnd.wav",
+      "audio/mp4",
+      "video/webm", // Browser recordings sometimes come as video/webm with audio
     ];
+    
+    const allowedExtensions = [".wav", ".mp3", ".flac", ".m4a", ".ogg", ".webm"];
+    
+    console.log(`📁 File received: ${file.originalname}, MIME: ${file.mimetype}`);
+    
     if (
       allowedTypes.includes(file.mimetype) ||
-      [".wav", ".mp3", ".flac", ".m4a", ".ogg"].includes(
-        path.extname(file.originalname).toLowerCase()
-      )
+      allowedExtensions.includes(path.extname(file.originalname).toLowerCase()) ||
+      file.mimetype.startsWith('audio/') ||
+      (file.mimetype === 'video/webm' && file.originalname.includes('audio'))
     ) {
       cb(null, true);
     } else {
+      console.error(`❌ Rejected file: ${file.originalname}, MIME: ${file.mimetype}`);
       cb(new Error("Only audio files are allowed"), false);
     }
   },
@@ -104,10 +115,33 @@ const createProcessorScript = async () => {
   const processorScript = `
 import sys
 import json
-import numpy as np
-import joblib
-import os
-from feature_extraction import extract_features_from_file, features_dict_to_vector
+import warnings
+
+# Suppress NumPy/Numba compatibility warnings
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
+
+try:
+    import numpy as np
+    # Check NumPy version compatibility
+    numpy_version = tuple(map(int, np.__version__.split('.')[:2]))
+    if numpy_version >= (2, 1):
+        print(json.dumps({
+            "success": False, 
+            "error": f"NumPy version {np.__version__} is too new. Please install NumPy <2.1.0 using: pip install 'numpy<2.1.0' --force-reinstall"
+        }))
+        sys.exit(1)
+        
+    import joblib
+    import os
+    from feature_extraction import extract_features_from_file, features_dict_to_vector
+    
+except ImportError as e:
+    print(json.dumps({
+        "success": False,
+        "error": f"Missing required packages: {str(e)}. Please install using: pip install -r requirements.txt"
+    }))
+    sys.exit(1)
 
 def main():
     if len(sys.argv) != 2:
@@ -117,21 +151,71 @@ def main():
     audio_file_path = sys.argv[1]
     
     try:
+        # Check if audio file exists
+        if not os.path.exists(audio_file_path):
+            raise Exception(f"Audio file not found: {audio_file_path}")
+            
+        # Check if models directory exists and contains required files
+        model_files = ["models/scaler.pkl", "models/pca.pkl", "models/final_model.pkl", "models/label_encoder.pkl"]
+        for model_file in model_files:
+            if not os.path.exists(model_file):
+                raise Exception(f"Required model file not found: {model_file}")
+        
         # Load trained models
+        print(f"Loading models...", file=sys.stderr)
         scaler = joblib.load("models/scaler.pkl")
         pca = joblib.load("models/pca.pkl")
         final_model = joblib.load("models/final_model.pkl")
         label_encoder = joblib.load("models/label_encoder.pkl")
+        print(f"Models loaded successfully", file=sys.stderr)
         
         # Feature order
         FEATURE_ORDER = ['meanfreq', 'sd', 'median', 'Q25', 'Q75', 'IQR', 'skew', 'kurt', 'sp.ent', 'sfm', 
                          'mode', 'centroid', 'meanfun', 'minfun', 'maxfun', 'meandom', 'mindom', 'maxdom', 'dfrange', 'modindx']
         
         # Extract features from audio
-        features_dict = extract_features_from_file(audio_file_path)
+        print(f"Extracting features from: {audio_file_path}", file=sys.stderr)
+        
+        # Check if we need to convert webm to wav for better compatibility
+        processed_audio_path = audio_file_path
+        if audio_file_path.lower().endswith('.webm'):
+            try:
+                import subprocess
+                # Use FFmpeg to convert WebM to WAV
+                wav_path = audio_file_path.replace('.webm', '.wav')
+                
+                # FFmpeg command to convert WebM to WAV
+                ffmpeg_cmd = [
+                    'ffmpeg', '-i', audio_file_path, 
+                    '-acodec', 'pcm_s16le', 
+                    '-ar', '22050', 
+                    '-ac', '1', 
+                    '-y',  # overwrite output files
+                    wav_path
+                ]
+                
+                result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True)
+                
+                if result.returncode == 0:
+                    processed_audio_path = wav_path
+                    print(f"Successfully converted WebM to WAV: {wav_path}", file=sys.stderr)
+                else:
+                    print(f"FFmpeg conversion failed: {result.stderr}", file=sys.stderr)
+                    raise Exception(f"FFmpeg conversion failed: {result.stderr}")
+                    
+            except FileNotFoundError:
+                print("FFmpeg not found. Please install FFmpeg to process WebM files.", file=sys.stderr)
+                raise Exception("FFmpeg is required to process WebM files. Please install FFmpeg and add it to your PATH.")
+            except Exception as conv_error:
+                print(f"WebM conversion failed: {conv_error}", file=sys.stderr)
+                raise Exception(f"Failed to convert WebM file: {str(conv_error)}")
+        
+        features_dict = extract_features_from_file(processed_audio_path)
+        print(f"Features extracted: {len(features_dict)} features", file=sys.stderr)
         
         # Convert to vector in correct order
         features_vector = features_dict_to_vector(features_dict, FEATURE_ORDER)
+        print(f"Features vector shape: {features_vector.shape if hasattr(features_vector, 'shape') else 'N/A'}", file=sys.stderr)
         
         # Scale features
         features_scaled = scaler.transform(features_vector)
@@ -164,9 +248,11 @@ def main():
         print(json.dumps(result))
         
     except Exception as e:
+        import traceback
         error_result = {
             "success": False,
-            "error": str(e)
+            "error": str(e),
+            "traceback": traceback.format_exc()
         }
         print(json.dumps(error_result))
         sys.exit(1)

@@ -1,8 +1,8 @@
-numpy
+numpy>=1.21.0,<2.1.0
 pandas
 scikit-learn
 joblib
-librosa
+librosa>=0.10.0
 soundfile
 streamlit
 matplotlib
@@ -11,3 +11,4 @@ scipy
 python-dotenv
 streamlit-webrtc    # optional: only if you want mic recording via webrtc
 tabulate
+numba>=0.56.0

@@ -6,6 +6,7 @@ import EnhancedAudioControls from "@/components/EnhancedAudioControls";
 import AnimatedButton from "@/components/AnimatedButton";
 import EnhancedOrb from "@/components/EnhancedOrb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const API_BASE_URL = "http://localhost:3001/api";
 
@@ -35,6 +36,7 @@ const FEATURE_ORDER = [
 
 // Analyze page: audio upload + ML prediction with same output as Streamlit app
 export default function Analyze() {
+  const { isDark } = useTheme();
   const [hasAudio, setHasAudio] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState(null);
@@ -68,12 +70,33 @@ export default function Analyze() {
 
     try {
       const formData = new FormData();
-      formData.append("audio", audioFile);
+      
+      // If it's a Blob (recorded audio), convert it to a File with proper name
+      let fileToSend = audioFile;
+      if (audioFile instanceof Blob && !(audioFile instanceof File)) {
+        fileToSend = new File([audioFile], 'recorded-audio.webm', { 
+          type: audioFile.type || 'audio/webm' 
+        });
+      }
+      
+      formData.append("audio", fileToSend);
 
       const response = await fetch(`${API_BASE_URL}/predict`, {
         method: "POST",
         body: formData,
       });
+
+      // Check if response is OK
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        throw new Error(`Server returned HTML instead of JSON. Response: ${text.substring(0, 200)}...`);
+      }
 
       const result = await response.json();
 
@@ -84,7 +107,12 @@ export default function Analyze() {
         setError(result.error || "Failed to process audio");
       }
     } catch (err) {
-      setError(`Network error: ${err.message}`);
+      console.error("Audio processing error:", err);
+      if (err.message.includes("Failed to fetch")) {
+        setError("Cannot connect to server. Please make sure the backend is running on http://localhost:3001");
+      } else {
+        setError(`Network error: ${err.message}`);
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -111,6 +139,18 @@ export default function Analyze() {
         }),
       });
 
+      // Check if response is OK
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        throw new Error(`Server returned HTML instead of JSON. Response: ${text.substring(0, 200)}...`);
+      }
+
       const result = await response.json();
 
       if (result.success) {
@@ -122,7 +162,12 @@ export default function Analyze() {
         setError(result.error || "Failed to test sample");
       }
     } catch (err) {
-      setError(`Network error: ${err.message}`);
+      console.error("Sample testing error:", err);
+      if (err.message.includes("Failed to fetch")) {
+        setError("Cannot connect to server. Please make sure the backend is running on http://localhost:3001");
+      } else {
+        setError(`Network error: ${err.message}`);
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -212,8 +257,8 @@ export default function Analyze() {
               />
 
               {isProcessing && (
-                <div className="flex items-center gap-2 text-blue-600">
-                  <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                <div className={`flex items-center gap-2 ${isDark ? 'text-white' : 'text-beige-700'}`}>
+                  <div className={`animate-spin w-4 h-4 border-2 ${isDark ? 'border-white' : 'border-beige-600'} border-t-transparent rounded-full`}></div>
                   <span>🔊 Analyzing audio and extracting features...</span>
                 </div>
               )}
@@ -269,10 +314,14 @@ export default function Analyze() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg"
+            className={`${
+              isDark 
+                ? 'bg-neutral-800 border-neutral-600 text-neutral-300' 
+                : 'bg-neutral-100 border-neutral-300 text-neutral-700'
+            } border p-4 rounded-lg`}
           >
             <div className="flex items-center gap-2">
-              <span>❌</span>
+              <span>✗</span>
               <span>{error}</span>
             </div>
           </motion.div>
@@ -287,14 +336,18 @@ export default function Analyze() {
             className="space-y-6"
           >
             {/* Prediction Results */}
-            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+            <Card className={`${
+              isDark 
+                ? 'bg-gradient-to-r from-neutral-900 to-black border-neutral-700' 
+                : 'bg-gradient-to-r from-neutral-50 to-neutral-100 border-neutral-200'
+            }`}>
               <CardHeader>
-                <CardTitle className="text-green-800 text-xl">
-                  🎯 Prediction Results
+                <CardTitle className={`${isDark ? 'text-white' : 'text-neutral-800'} text-xl`}>
+                  Prediction Results
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="text-2xl font-bold text-green-900">
+                <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-neutral-900'}`}>
                   Predicted Gender:{" "}
                   <span className="capitalize">{results.prediction}</span>
                 </div>
@@ -305,17 +358,17 @@ export default function Analyze() {
                     <span className="font-semibold">Expected:</span>{" "}
                     {results.expected}
                     {results.prediction === results.expected ? (
-                      <span className="ml-2 text-green-600">✅ Match!</span>
+                      <span className={`ml-2 ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>✓ Match!</span>
                     ) : (
-                      <span className="ml-2 text-red-600">❌ Mismatch</span>
+                      <span className={`ml-2 ${isDark ? 'text-neutral-400' : 'text-neutral-700'}`}>✗ Mismatch</span>
                     )}
                   </div>
                 )}
 
                 {/* Prediction Confidence - Same as Streamlit */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-green-800 text-lg">
-                    📊 Prediction Confidence
+                  <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-neutral-800'} text-lg`}>
+                    Prediction Confidence
                   </h3>
                   {Object.entries(results.probabilities).map(
                     ([gender, prob]) => (
@@ -326,9 +379,9 @@ export default function Analyze() {
                           </span>
                           <span>{(prob * 100).toFixed(2)}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className={`w-full ${isDark ? 'bg-neutral-700' : 'bg-neutral-200'} rounded-full h-3`}>
                           <motion.div
-                            className="bg-green-600 h-3 rounded-full"
+                            className={`${isDark ? 'bg-white' : 'bg-neutral-600'} h-3 rounded-full`}
                             initial={{ width: 0 }}
                             animate={{ width: `${prob * 100}%` }}
                             transition={{ duration: 0.8, delay: 0.3 }}
