@@ -1,14 +1,36 @@
-numpy>=1.21.0,<2.1.0
-pandas
-scikit-learn
-joblib
-librosa>=0.10.0
-soundfile
-streamlit
-matplotlib
-seaborn
-scipy
-python-dotenv
-streamlit-webrtc    # optional: only if you want mic recording via webrtc
-tabulate
-numba>=0.56.0
+# Python ML Audio Analysis Requirements
+# Compatible with Python 3.8+ (tested on Python 3.12.7)
+# Pip version: 25.1.1+
+
+# Core ML Libraries
+numpy>=1.21.0,<2.1.0    # NumPy 2.1+ breaks numba compatibility
+pandas>=1.3.0
+scikit-learn>=1.0.0
+joblib>=1.0.0
+
+# Audio Processing Libraries
+librosa>=0.10.0,<0.11.0  # Audio feature extraction
+soundfile>=0.12.0        # Audio file I/O
+numba>=0.56.0,<0.60.0    # Required by librosa, strict NumPy requirements
+
+# Visualization and UI
+matplotlib>=3.5.0
+seaborn>=0.11.0
+streamlit>=1.28.0        # Web interface
+
+# Scientific Computing
+scipy>=1.7.0
+
+# Utility Libraries
+python-dotenv>=0.19.0    # Environment variables
+tabulate>=0.8.9          # Pretty printing tables
+
+# Optional: WebRTC for browser audio recording
+# streamlit-webrtc>=0.45.0    # Uncomment if needed
+
+# Development and Testing (optional)
+# pytest>=6.0.0
+# jupyter>=1.0.0
+
+# Audio codec support (install separately if needed)
+# ffmpeg-python>=0.2.0     # Python FFmpeg wrapper (optional)
