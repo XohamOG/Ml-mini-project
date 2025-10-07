@@ -1,0 +1,7 @@
+{
+  "model_gamma_param": "scale",
+  "calculated_gamma": 5.479794652827819e-05,
+  "pca_gamma": 0.05960573107937154,
+  "n_pca_features": 10,
+  "pca_variance": 1.677691023818483
+}
