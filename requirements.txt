@@ -1,0 +1,13 @@
+numpy
+pandas
+scikit-learn
+joblib
+librosa
+soundfile
+streamlit
+matplotlib
+seaborn
+scipy
+python-dotenv
+streamlit-webrtc    # optional: only if you want mic recording via webrtc
+tabulate
