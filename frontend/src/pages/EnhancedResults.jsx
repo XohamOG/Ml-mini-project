@@ -302,12 +302,11 @@ export default function Results() {
               variants={itemVariants}
               whileHover={{ scale: 1.02, y: -2 }}
             >
-              <div className="card-pop bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800 p-4 text-center">
-                <div className="text-2xl mb-2">📊</div>
-                <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+              <div className="card-pop bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 border-neutral-200 dark:border-neutral-700 p-4 text-center">
+                <div className="text-2xl font-bold text-neutral-700 dark:text-neutral-200">
                   3,168
                 </div>
-                <div className="text-sm text-blue-600 dark:text-blue-400">
+                <div className="text-sm text-neutral-600 dark:text-neutral-300">
                   Total Samples
                 </div>
               </div>
@@ -317,12 +316,11 @@ export default function Results() {
               variants={itemVariants}
               whileHover={{ scale: 1.02, y: -2 }}
             >
-              <div className="card-pop bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800 p-4 text-center">
-                <div className="text-2xl mb-2">🎯</div>
-                <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+              <div className="card-pop bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 border-neutral-200 dark:border-neutral-700 p-4 text-center">
+                <div className="text-2xl font-bold text-neutral-700 dark:text-neutral-200">
                   20
                 </div>
-                <div className="text-sm text-green-600 dark:text-green-400">
+                <div className="text-sm text-neutral-600 dark:text-neutral-300">
                   Audio Features
                 </div>
               </div>
@@ -332,12 +330,11 @@ export default function Results() {
               variants={itemVariants}
               whileHover={{ scale: 1.02, y: -2 }}
             >
-              <div className="card-pop bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800 p-4 text-center">
-                <div className="text-2xl mb-2">⚖️</div>
-                <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+              <div className="card-pop bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 border-neutral-200 dark:border-neutral-700 p-4 text-center">
+                <div className="text-2xl font-bold text-neutral-700 dark:text-neutral-200">
                   50/50
                 </div>
-                <div className="text-sm text-purple-600 dark:text-purple-400">
+                <div className="text-sm text-neutral-600 dark:text-neutral-300">
                   Gender Balance
                 </div>
               </div>
@@ -347,12 +344,11 @@ export default function Results() {
               variants={itemVariants}
               whileHover={{ scale: 1.02, y: -2 }}
             >
-              <div className="card-pop bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800 p-4 text-center">
-                <div className="text-2xl mb-2">🗣️</div>
-                <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+              <div className="card-pop bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 border-neutral-200 dark:border-neutral-700 p-4 text-center">
+                <div className="text-2xl font-bold text-neutral-700 dark:text-neutral-200">
                   1584
                 </div>
-                <div className="text-sm text-orange-600 dark:text-orange-400">
+                <div className="text-sm text-neutral-600 dark:text-neutral-300">
                   Each Gender
                 </div>
               </div>
@@ -365,8 +361,7 @@ export default function Results() {
             variants={itemVariants}
             whileHover={{ scale: 1.01 }}
           >
-            <h3 className="text-xl font-semibold mb-4 flex items-center">
-              <span className="mr-2">🏆</span>
+            <h3 className="text-xl font-semibold mb-4">
               Model Comparison Results
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
@@ -385,7 +380,7 @@ export default function Results() {
                   whileHover={{ scale: 1.02, y: -2 }}
                   className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                     model.isBest
-                      ? "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-300 dark:border-green-700"
+                      ? "bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 border-neutral-300 dark:border-neutral-600"
                       : "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-gray-200 dark:border-gray-700"
                   }`}
                 >
@@ -393,14 +388,14 @@ export default function Results() {
                     <h4
                       className={`font-semibold text-sm ${
                         model.isBest
-                          ? "text-green-700 dark:text-green-300"
+                          ? "text-neutral-800 dark:text-neutral-100"
                           : "text-gray-700 dark:text-gray-300"
                       }`}
                     >
                       {model.model}
                     </h4>
                     {model.isBest && (
-                      <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full">
+                      <span className="text-xs bg-neutral-600 dark:bg-neutral-300 text-white dark:text-black px-2 py-1 rounded-full">
                         BEST
                       </span>
                     )}
@@ -414,7 +409,7 @@ export default function Results() {
                       <span
                         className={`text-sm font-medium ${
                           model.isBest
-                            ? "text-green-600 dark:text-green-400"
+                            ? "text-neutral-700 dark:text-neutral-200"
                             : "text-gray-600 dark:text-gray-400"
                         }`}
                       >
@@ -428,7 +423,7 @@ export default function Results() {
                       <span
                         className={`text-sm font-medium ${
                           model.isBest
-                            ? "text-green-600 dark:text-green-400"
+                            ? "text-neutral-700 dark:text-neutral-200"
                             : "text-gray-600 dark:text-gray-400"
                         }`}
                       >
@@ -442,7 +437,7 @@ export default function Results() {
                       <span
                         className={`text-sm font-medium ${
                           model.isBest
-                            ? "text-green-600 dark:text-green-400"
+                            ? "text-neutral-700 dark:text-neutral-200"
                             : "text-gray-600 dark:text-gray-400"
                         }`}
                       >
@@ -456,7 +451,7 @@ export default function Results() {
                       <span
                         className={`text-sm font-medium ${
                           model.isBest
-                            ? "text-green-600 dark:text-green-400"
+                            ? "text-neutral-700 dark:text-neutral-200"
                             : "text-gray-600 dark:text-gray-400"
                         }`}
                       >
@@ -944,7 +939,7 @@ export default function Results() {
                       href="https://www.kaggle.com/datasets/primaryobjects/voicegender/data"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                      className="text-sm text-neutral-600 dark:text-neutral-300 hover:underline"
                     >
                       Kaggle Dataset
                     </a>
